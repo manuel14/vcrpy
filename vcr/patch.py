@@ -8,6 +8,7 @@ from .stubs import VCRHTTPConnection, VCRHTTPSConnection
 import http.client as httplib
 
 import logging
+import sys
 
 log = logging.getLogger(__name__)
 # Save some of the original types for the purposes of unpatching
@@ -80,9 +81,16 @@ else:
     _SimpleAsyncHTTPClient_fetch_impl = tornado.simple_httpclient.SimpleAsyncHTTPClient.fetch_impl
 
 try:
+    log.info('tornado modules')
+    log.info(dir(tornado))
+    log.info('sys modules')
+    log.info(sys.modules)
     import tornado.curl_httpclient
 except ImportError:  # pragma: no cover
     pass
+except AttributeError as e:
+    log.info(tornado)
+    log.info(str(e))
 else:
     _CurlAsyncHTTPClient_fetch_impl = tornado.curl_httpclient.CurlAsyncHTTPClient.fetch_impl
 
@@ -302,9 +310,15 @@ class CassettePatcherBuilder:
             new_fetch_impl = vcr_fetch_impl(self._cassette, _SimpleAsyncHTTPClient_fetch_impl)
             yield simple.SimpleAsyncHTTPClient, "fetch_impl", new_fetch_impl
         try:
+            log.info('tornado modules')
+            log.info(dir(tornado))
+            log.info('sys modules')
+            log.info(sys.modules)
             import tornado.curl_httpclient as curl
         except ImportError:  # pragma: no cover
             pass
+        except AttributeError:
+            raise(str(tornado))
         else:
             from .stubs.tornado_stubs import vcr_fetch_impl
 
@@ -512,9 +526,16 @@ def reset_patchers():
     else:
         yield mock.patch.object(simple.SimpleAsyncHTTPClient, "fetch_impl", _SimpleAsyncHTTPClient_fetch_impl)
     try:
+        log.info('tornado modules')
+        log.info(dir(tornado))
+        log.info('sys modules')
+        log.info(sys.modules)
         import tornado.curl_httpclient as curl
     except ImportError:  # pragma: no cover
         pass
+    except AttributeError:
+        log.info('tornado attr failure {}'.format(str(tornado)))
+        raise(str(tornado))
     else:
         yield mock.patch.object(curl.CurlAsyncHTTPClient, "fetch_impl", _CurlAsyncHTTPClient_fetch_impl)
 
