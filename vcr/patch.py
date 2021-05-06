@@ -89,8 +89,8 @@ try:
 except ImportError:  # pragma: no cover
     pass
 except AttributeError as e:
-    log.info(tornado)
-    log.info(str(e))
+    log.info('tornado attr failure {}'.format(str(tornado)))
+    raise
 else:
     _CurlAsyncHTTPClient_fetch_impl = tornado.curl_httpclient.CurlAsyncHTTPClient.fetch_impl
 
@@ -318,7 +318,8 @@ class CassettePatcherBuilder:
         except ImportError:  # pragma: no cover
             pass
         except AttributeError:
-            raise(str(tornado))
+            log.info('tornado attr failure {}'.format(str(tornado)))
+            raise
         else:
             from .stubs.tornado_stubs import vcr_fetch_impl
 
@@ -535,7 +536,7 @@ def reset_patchers():
         pass
     except AttributeError:
         log.info('tornado attr failure {}'.format(str(tornado)))
-        raise(str(tornado))
+        raise
     else:
         yield mock.patch.object(curl.CurlAsyncHTTPClient, "fetch_impl", _CurlAsyncHTTPClient_fetch_impl)
 
